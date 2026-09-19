@@ -1107,6 +1107,142 @@ function smash(kind){
   }catch(e){}
 }
 
+/* ---------- the screams ----------
+   Every one of them is built the same way and set up differently: an
+   oscillator whose pitch swoops, bent through a distortion curve, with a
+   wobble on top and a layer of noise for the breath. Change the numbers and
+   you get a shriek, a gurgle, a roar or a screech. */
+var DISTC={};
+function distCurve(amount){
+  if(DISTC[amount]) return DISTC[amount];
+  var n=1024, curve=new Float32Array(n), i, k=amount;
+  for(i=0;i<n;i++){
+    var x=i*2/n-1;
+    curve[i]=(1+k)*x/(1+k*Math.abs(x));
+  }
+  DISTC[amount]=curve;
+  return curve;
+}
+function scream(o){
+  if(!S.sound) return;
+  var c=actx(); if(!c) return;
+  try{
+    var t=c.currentTime, d=o.dur||1.1, vol=(o.vol||0.30);
+
+    /* the voice */
+    var osc=c.createOscillator(), g=c.createGain(), out=c.createGain();
+    osc.type=o.type||'sawtooth';
+    osc.frequency.setValueAtTime(o.f0,t);
+    osc.frequency.exponentialRampToValueAtTime(o.f1,t+d*0.28);
+    osc.frequency.exponentialRampToValueAtTime(o.f2,t+d);
+
+    var node=osc;
+    if(o.dist){
+      var ws=c.createWaveShaper();
+      ws.curve=distCurve(o.dist); ws.oversample='2x';
+      osc.connect(ws); node=ws;
+    }
+    var lp=c.createBiquadFilter();
+    lp.type='bandpass';
+    lp.frequency.setValueAtTime(o.bp0||1200,t);
+    lp.frequency.exponentialRampToValueAtTime(o.bp1||2400,t+d);
+    lp.Q.value=o.q||1.1;
+    node.connect(lp); lp.connect(g);
+
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+0.035);
+    g.gain.setValueAtTime(vol,t+d*0.55);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    g.connect(out); out.gain.value=1; out.connect(c.destination);
+
+    /* the wobble in the voice */
+    if(o.vib){
+      var lfo=c.createOscillator(), la=c.createGain();
+      lfo.type='sine'; lfo.frequency.value=o.vibHz||6;
+      la.gain.value=o.vib;
+      lfo.connect(la); la.connect(osc.frequency);
+      lfo.start(t); lfo.stop(t+d+0.05);
+    }
+    /* the wet burble, for the ones that are not dry */
+    if(o.gargle){
+      var gl=c.createOscillator(), ga=c.createGain();
+      gl.type='sine'; gl.frequency.value=o.gargle;
+      ga.gain.value=0.55;
+      gl.connect(ga); ga.connect(out.gain);
+      gl.start(t); gl.stop(t+d+0.05);
+    }
+    osc.start(t); osc.stop(t+d+0.05);
+
+    /* the breath behind it */
+    if(o.nvol){
+      var b=noiseBuf();
+      if(b){
+        var ns=c.createBufferSource(), nf=c.createBiquadFilter(), ng=c.createGain();
+        ns.buffer=b; ns.loop=true;
+        nf.type='bandpass'; nf.Q.value=o.nq||1.4;
+        nf.frequency.setValueAtTime(o.nf0||900,t);
+        nf.frequency.exponentialRampToValueAtTime(o.nf1||2600,t+d);
+        ng.gain.setValueAtTime(0.0001,t);
+        ng.gain.exponentialRampToValueAtTime(o.nvol,t+0.05);
+        ng.gain.exponentialRampToValueAtTime(0.0001,t+d);
+        ns.connect(nf); nf.connect(ng); ng.connect(c.destination);
+        ns.start(t); ns.stop(t+d+0.05);
+      }
+    }
+  }catch(e){}
+}
+/* the stranger does not scream. It laughs, which is worse, and it is the
+   one that is trying to teach him something rather than make him jump. */
+function chuckle(){
+  if(!S.sound) return;
+  var c=actx(); if(!c) return;
+  var i, base=[210,190,170,155,145];
+  for(i=0;i<5;i++){
+    (function(k){
+      setTimeout(function(){
+        scream({f0:base[k]*1.6,f1:base[k],f2:base[k]*0.82,dur:0.17,type:'sawtooth',
+                dist:5,bp0:700,bp1:420,q:3.2,nvol:0.05,nf0:500,nf1:300,vol:0.24});
+      },k*185);
+    })(i);
+  }
+}
+function screamFor(id){
+  var v=SCREAMS[id]||SCREAMS.smiley;
+  if(v==='chuckle'){ chuckle(); return; }
+  scream(v);
+}
+var SCREAMS={
+  /* a high tearing shriek */
+  smiley:  {f0:320,f1:1500,f2:620,dur:1.15,type:'sawtooth',vib:28,vibHz:7,dist:14,
+            bp0:1200,bp1:3200,q:2.0,nvol:0.10,nf0:1500,nf1:4200,vol:0.25},
+  /* underwater, thick and bubbling */
+  berry:   {f0:190,f1:95,f2:62,dur:1.30,type:'sawtooth',vib:14,vibHz:4,dist:7,gargle:9,
+            bp0:400,bp1:180,q:2.6,nvol:0.20,nf0:300,nf1:900,vol:0.24},
+  /* an insect screech, far too fast and far too high */
+  spider:  {f0:900,f1:2700,f2:1900,dur:0.85,type:'square',vib:70,vibHz:19,dist:20,
+            bp0:2200,bp1:6000,q:4.5,nvol:0.12,nf0:3000,nf1:7000,vol:0.13},
+  /* a wail that does not sound like an animal at all */
+  alien:   {f0:420,f1:1900,f2:1150,dur:1.35,type:'sine',vib:55,vibHz:5.5,dist:4,
+            bp0:900,bp1:2600,q:1.4,nvol:0.05,nf0:800,nf1:2400,vol:0.33},
+  /* a long hollow moan, all breath */
+  ghost:   {f0:230,f1:340,f2:150,dur:1.65,type:'sine',vib:9,vibHz:3,dist:0,gargle:2.5,
+            bp0:500,bp1:1100,q:1.0,nvol:0.24,nf0:400,nf1:1300,vol:0.45},
+  /* no scream: a laugh */
+  stranger:'chuckle',
+  /* the sound of something digital going wrong */
+  robot:   {f0:640,f1:1600,f2:180,dur:0.95,type:'square',vib:0,dist:26,gargle:31,
+            bp0:1800,bp1:800,q:3.0,nvol:0.18,nf0:2000,nf1:6000,vol:0.10},
+  /* the big low one */
+  lava:    {f0:120,f1:230,f2:68,dur:1.55,type:'sawtooth',vib:10,vibHz:5,dist:32,
+            bp0:260,bp1:1500,q:1.2,nvol:0.26,nf0:200,nf1:1500,vol:0.48},
+  /* wet, and it goes on longer than you want it to */
+  slime:   {f0:160,f1:430,f2:85,dur:1.20,type:'triangle',vib:18,vibHz:6,dist:9,gargle:14,
+            bp0:600,bp1:1600,q:2.2,nvol:0.28,nf0:500,nf1:2000,vol:0.32},
+  /* whatever he built gets the all round roar */
+  mine:    {f0:210,f1:950,f2:300,dur:1.25,type:'sawtooth',vib:22,vibHz:6,dist:18,
+            bp0:900,bp1:2600,q:1.8,nvol:0.16,nf0:800,nf1:3000,vol:0.33}
+};
+
 /* ---------- the broken glass ---------- */
 function makeCrack(x,y,len){
   var pts=[[x,y]], a=Math.random()*6.283, n=4+Math.floor(Math.random()*4), i, px=x, py=y;
@@ -1477,7 +1613,12 @@ function scareTick(dt){
         SCARE.flash=b.big?0.9:0.55; SCARE.flashCol=st.flash;
         if(st.mode==='glitch') SCARE.glitch=b.big?1:0.6;
         smash(st.bits);
-        growl();
+        if(b.big){
+          /* the smash lands first, then it lets him have it */
+          setTimeout(function(){ screamFor(S.face); },130);
+        }else{
+          growl();
+        }
       }
     }
   }
@@ -2585,7 +2726,7 @@ if(S.stage>=FACES_LAST) $('#askagain').className='on';
 window.__paint=paintFace;
 window.__eyesets=EYESETS;
 window.__game={S:S,FACES:FACES,askTrust:askTrust,answerTrust:answerTrust,LUNGE:LUNGE,
-  SCARE:SCARE,SCARES:SCARES,scareStyle:scareStyle,startScare:startScare,skipScare:skipScare,scareTick:scareTick,faceById:faceById,faceUnlocked:faceUnlocked,buildPicker:buildPicker,perTap:perTap,stageFor:stageFor,
+  SCARE:SCARE,SCARES:SCARES,SCREAMS:SCREAMS,scream:scream,screamFor:screamFor,chuckle:chuckle,scareStyle:scareStyle,startScare:startScare,skipScare:skipScare,scareTick:scareTick,faceById:faceById,faceUnlocked:faceUnlocked,buildPicker:buildPicker,perTap:perTap,stageFor:stageFor,
   STAGES:STAGES,LEVELS:LEVELS,levelFor:levelFor,tapsToNextLevel:tapsToNextLevel,tapsToNextStage:tapsToNextStage,
   MUSIC:MUSIC,TRACK:TRACK,FPS:FPS,leadVoices:leadVoices,musicStart:musicStart,musicStop:musicStop,musicLevel:musicLevel,wantMusic:wantMusic,
   LEAD:LEAD,ROOTS:ROOTS,STEPS:STEPS,BPM:BPM,BARS:BARS,
