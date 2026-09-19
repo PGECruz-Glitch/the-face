@@ -29,6 +29,11 @@ body{overflow:hidden;touch-action:manipulation}
 #bar{width:100%;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
 #stage{font-family:var(--pix);font-weight:bold;font-size:13px;letter-spacing:1px;color:var(--purple)}
 #best{font-size:12px;color:var(--dim)}
+#bFull{display:none;flex:0 0 auto;margin-left:8px;width:30px;height:26px;padding:0;
+  border:2px solid var(--line);border-radius:8px;background:rgba(18,10,32,.9);
+  color:var(--purple);font-size:14px;line-height:1;cursor:pointer}
+#bFull.on{display:block}
+#bFull.is{border-color:var(--green);color:var(--green)}
 #count{width:100%;text-align:center;font-family:var(--pix);font-weight:bold;
   font-size:clamp(30px,10vw,54px);line-height:1.1;margin:2px 0 0;color:var(--green);
   text-shadow:0 0 18px rgba(61,255,119,.35)}
@@ -170,6 +175,10 @@ body{overflow:hidden;touch-action:manipulation}
 #mkFoot{display:flex;margin-top:6px;padding-bottom:8px}
 #mkFoot .btn{margin-right:6px}
 #mkFoot .btn:last-child{margin-right:0}
+#iFull{display:none;margin-top:7px;padding:6px 14px;border:2px solid var(--line);
+  border-radius:10px;background:rgba(10,4,30,.5);color:var(--dim);
+  font-family:var(--pix);font-weight:bold;font-size:10.5px;letter-spacing:1px;cursor:pointer}
+#iFull.on{display:block}
 #iMake{display:none;margin-top:9px;padding:9px 18px;border:2px solid var(--purple);
   border-radius:12px;background:rgba(10,4,30,.6);color:#e9d8ff;
   font-family:var(--pix);font-weight:bold;font-size:13px;letter-spacing:1px;cursor:pointer}
@@ -336,6 +345,7 @@ body{overflow:hidden;touch-action:manipulation}
 
     <button id="iGo" type="button">START</button>
     <button id="iMake" class="on" type="button">&#127912; MAKE YOUR OWN FACE</button>
+    <button id="iFull" type="button">&#9974; FULL SCREEN: ON</button>
     </div>
   </div>
 </div>
@@ -344,6 +354,7 @@ body{overflow:hidden;touch-action:manipulation}
   <div id="bar">
     <div id="stage">STAGE 1 &mdash; TINY</div>
     <div id="best">BEST 0</div>
+    <button id="bFull" type="button">&#9974;</button>
   </div>
   <div id="count">0</div>
   <div id="rate"></div>
@@ -634,9 +645,9 @@ function nextLockedFace(){
 }
 
 var KEY='theface-v1';
-var S={total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,music:true,face:'smiley',trust:0,v:3};
+var S={total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,music:true,full:true,face:'smiley',trust:0,v:3};
 
-function fresh(){ return {total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,music:true,face:'smiley',trust:0,v:3}; }
+function fresh(){ return {total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,music:true,full:true,face:'smiley',trust:0,v:3}; }
 function load(){
   try{
     var r=JSON.parse(localStorage.getItem(KEY));
@@ -1003,6 +1014,66 @@ function sizeCanvas(){
   cv.width=Math.floor(W*DPR); cv.height=Math.floor(H*DPR);
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
+
+/* =======================================================================
+   FULL SCREEN
+   A browser will only do this from a real press, so it happens on START and
+   on the button — never on its own. Whether he wants it is remembered.
+   ======================================================================= */
+function fsEl(){
+  return document.fullscreenElement||document.webkitFullscreenElement||
+         document.mozFullScreenElement||document.msFullscreenElement||null;
+}
+function fsCan(){
+  var e=document.documentElement;
+  return !!(e.requestFullscreen||e.webkitRequestFullscreen||
+            e.mozRequestFullScreen||e.msRequestFullscreen);
+}
+function fsGo(){
+  var e=document.documentElement;
+  try{
+    if(e.requestFullscreen){ var p=e.requestFullscreen(); if(p&&p['catch']) p['catch'](function(){}); }
+    else if(e.webkitRequestFullscreen) e.webkitRequestFullscreen();
+    else if(e.mozRequestFullScreen) e.mozRequestFullScreen();
+    else if(e.msRequestFullscreen) e.msRequestFullscreen();
+  }catch(err){}
+}
+function fsOut(){
+  try{
+    if(document.exitFullscreen){ var p=document.exitFullscreen(); if(p&&p['catch']) p['catch'](function(){}); }
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if(document.msExitFullscreen) document.msExitFullscreen();
+  }catch(err){}
+}
+function fsPaint(){
+  var b=$('#bFull'); if(!b) return;
+  b.className=fsCan()?(fsEl()?'on is':'on'):'';
+  /* the same picture either way, green when it is on. An X in the corner
+     looks like it closes the game, which is not what it does. */
+  b.innerHTML='&#9974;';
+  var t=$('#iFull');
+  if(t) t.innerHTML=(S.full?'&#9974; FULL SCREEN: ON':'&#9974; FULL SCREEN: OFF');
+}
+function fsToggle(){
+  if(!fsCan()) return;
+  if(fsEl()){ S.full=false; fsOut(); }
+  else { S.full=true; fsGo(); }
+  save(); setTimeout(fsPaint,120);
+}
+/* the sizes all change when it goes full screen, so remeasure everything */
+function fsChanged(){
+  lastW=0; lastH=0;                 /* make sizeCanvas look again */
+  sizeCanvas();
+  if(SCARE.on) scareCanvas();
+  if($('#maker').className==='on'){ buildMaker(); }
+  if($('#picker').className==='on') buildPicker();
+  fsPaint();
+}
+document.addEventListener('fullscreenchange',fsChanged,false);
+document.addEventListener('webkitfullscreenchange',fsChanged,false);
+document.addEventListener('mozfullscreenchange',fsChanged,false);
+document.addEventListener('MSFullscreenChange',fsChanged,false);
 
 /* =======================================================================
    THE ATTACK
@@ -2042,6 +2113,10 @@ function applySound(){
   $('#bSound').innerHTML=soundLabel();
   if(S.music&&musicWanted) musicStart(); else musicStop();
 }
+$('#bFull').addEventListener('click',function(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  fsToggle();
+});
 $('#bSound').addEventListener('click',function(){
   if(S.sound&&S.music){ S.music=false; }
   else if(S.sound){ S.sound=false; S.music=false; }
@@ -2574,6 +2649,13 @@ function openMaker(){
 $('#iMake').addEventListener('click',function(e){
   if(e&&e.preventDefault)e.preventDefault(); openMaker();
 });
+$('#iFull').addEventListener('click',function(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  S.full=!S.full; save(); fsPaint();
+  blip(S.full?900:500,0.08,'square',0.05);
+  /* if he turns it on while he is already in the game, do it now */
+  if(S.full&&started&&fsCan()&&!fsEl()) fsGo();
+});
 $('#mkClose').addEventListener('click',function(){ $('#maker').className=''; });
 $('#mkWipe').addEventListener('click',function(){
   S.custom=freshCustomKeepLook(); save();
@@ -2697,6 +2779,7 @@ function bindGate(id,which){
 var started=false;
 function startGame(){
   if(started) return; started=true;
+  if(S.full&&fsCan()) fsGo();          /* his press is what lets us do this */
   wantMusic(true);
   $('#intro').className='';
   $('#blobs').innerHTML='';        /* stop the animations once we are past it */
@@ -2711,6 +2794,8 @@ $('#iGo').addEventListener('click',function(e){
   if(gateOpen) startGame();
 });
 trackEl();          /* find out about boss.mp3 now, not when he presses START */
+if(fsCan()) $('#iFull').className='on';
+fsPaint();
 makeBlobs();
 bindGate('#whoD','d');
 bindGate('#whoS','s');
@@ -2728,6 +2813,7 @@ window.__eyesets=EYESETS;
 window.__game={S:S,FACES:FACES,askTrust:askTrust,answerTrust:answerTrust,LUNGE:LUNGE,
   SCARE:SCARE,SCARES:SCARES,SCREAMS:SCREAMS,scream:scream,screamFor:screamFor,chuckle:chuckle,scareStyle:scareStyle,startScare:startScare,skipScare:skipScare,scareTick:scareTick,faceById:faceById,faceUnlocked:faceUnlocked,buildPicker:buildPicker,perTap:perTap,stageFor:stageFor,
   STAGES:STAGES,LEVELS:LEVELS,levelFor:levelFor,tapsToNextLevel:tapsToNextLevel,tapsToNextStage:tapsToNextStage,
+  fsCan:fsCan,fsEl:fsEl,fsToggle:fsToggle,fsPaint:fsPaint,fsGo:fsGo,fsOut:fsOut,
   MUSIC:MUSIC,TRACK:TRACK,FPS:FPS,leadVoices:leadVoices,musicStart:musicStart,musicStop:musicStop,musicLevel:musicLevel,wantMusic:wantMusic,
   LEAD:LEAD,ROOTS:ROOTS,STEPS:STEPS,BPM:BPM,BARS:BARS,
   isKick:isKick,isClap:isClap,isBass:isBass,isStab:isStab,isRoll:isRoll,
