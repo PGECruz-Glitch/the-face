@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>THE FACE</title>
 <style>
 /* Written to run on old handheld browsers too: no `inset`, no `?.`, no nesting,
@@ -18,8 +18,12 @@ html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
 body{overflow:hidden;touch-action:manipulation}
 
+/* the paddings carry the phone's safe area so nothing hides under a camera
+   cutout or a gesture bar. env() falls back to 0 where it is not understood. */
 #app{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;
-  align-items:center;max-width:820px;margin:0 auto;padding:8px 10px 10px}
+  align-items:center;max-width:820px;margin:0 auto;
+  padding:calc(8px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-right,0px))
+          calc(10px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px))}
 
 /* ---------- top bar ---------- */
 #bar{width:100%;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -65,7 +69,7 @@ body{overflow:hidden;touch-action:manipulation}
 /* ---------- the reveal ---------- */
 #reveal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:50;display:none;
   align-items:center;justify-content:center;flex-direction:column;
-  background:rgba(4,2,10,.94);padding:22px;text-align:center}
+  background:rgba(4,2,10,.94);padding:22px;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #reveal.on{display:flex}
 #rTitle{font-family:var(--pix);font-weight:bold;font-size:clamp(22px,8vw,46px);
   color:var(--red);line-height:1.2;text-shadow:0 0 22px rgba(255,90,110,.5)}
@@ -80,7 +84,7 @@ body{overflow:hidden;touch-action:manipulation}
 }
 #trust{position:fixed;top:0;right:0;bottom:0;left:0;z-index:58;display:none;
   flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(4,2,10,.93);padding:22px;text-align:center}
+  background:rgba(4,2,10,.93);padding:22px;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #trust.on{display:flex}
 #tsQ{font-family:var(--pix);font-weight:bold;font-size:clamp(22px,8vw,46px);color:var(--yellow);
   line-height:1.2;text-shadow:0 0 22px rgba(255,217,61,.45)}
@@ -95,12 +99,15 @@ body{overflow:hidden;touch-action:manipulation}
   font-size:11px;padding:7px 14px;cursor:pointer}
 #askagain.on{display:block}
 #picker{position:fixed;top:0;right:0;bottom:0;left:0;z-index:55;display:none;
-  flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(4,2,10,.96);padding:18px 14px}
+  flex-direction:column;align-items:center;justify-content:flex-start;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:rgba(4,2,10,.96);
+  padding:calc(14px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px))
+          calc(16px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
 #picker.on{display:flex}
-#pkHead{font-family:var(--pix);font-weight:bold;font-size:clamp(15px,5vw,24px);
-  color:var(--purple);letter-spacing:2px;margin-bottom:14px}
-#pkGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:460px}
+#pkHead{font-family:var(--pix);font-weight:bold;font-size:clamp(13px,4.2vw,22px);
+  color:var(--purple);letter-spacing:2px;margin-bottom:10px;flex:0 0 auto;text-align:center}
+#pkGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;width:100%;max-width:460px;flex:0 0 auto}
 .pk{border:2px solid var(--line);border-radius:14px;background:rgba(20,12,34,.9);
   padding:8px 6px 7px;text-align:center;cursor:pointer;color:var(--ink);font:inherit;display:block}
 .pk.sel{border-color:var(--green);box-shadow:0 0 16px rgba(61,255,119,.25)}
@@ -109,7 +116,7 @@ body{overflow:hidden;touch-action:manipulation}
 .pk .nm{font-family:var(--pix);font-weight:bold;font-size:10px;margin-top:5px;letter-spacing:.5px}
 .pk .lk{font-size:10px;color:var(--yellow);margin-top:3px;min-height:13px}
 .pk .becomes{font-size:9.5px;color:var(--dim);margin-top:1px;min-height:12px}
-#pkClose{margin-top:18px;border:2px solid var(--green);border-radius:12px;background:transparent;
+#pkClose{margin-top:14px;flex:0 0 auto;border:2px solid var(--green);border-radius:12px;background:transparent;
   color:var(--green);font-family:var(--pix);font-weight:bold;font-size:14px;padding:11px 30px;cursor:pointer}
 /* sits in the middle of the screen, not down behind the buttons where the old
    one was half cut off */
@@ -120,7 +127,9 @@ body{overflow:hidden;touch-action:manipulation}
 #toast.on{display:block}
 /* ---------- make your own face ---------- */
 #maker{position:fixed;top:0;right:0;bottom:0;left:0;z-index:55;display:none;
-  background:rgba(6,3,14,.98);padding:8px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  background:rgba(6,3,14,.98);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(8px + env(safe-area-inset-top,0px)) calc(8px + env(safe-area-inset-right,0px))
+          calc(8px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px))}
 #maker.on{display:block}
 #mkHead{text-align:center;font-family:var(--pix);font-weight:bold;font-size:14px;
   letter-spacing:2px;color:var(--purple);margin:2px 0 6px}
@@ -143,12 +152,18 @@ body{overflow:hidden;touch-action:manipulation}
 .mkOpts.five .opt canvas{height:26px}
 .opt{border:2px solid var(--line);border-radius:10px;background:var(--panel);
   color:var(--ink);font:inherit;font-size:11.5px;padding:8px 4px;cursor:pointer;
-  text-align:center;width:100%;touch-action:none}
+  text-align:center;width:100%}
+/* touch-action:none only on the two rows he drags from — putting it on every
+   button stopped the panel scrolling at all, because the buttons cover it */
+.opt.drag{touch-action:none}
 .opt.sel{border-color:var(--green);color:var(--green);font-weight:bold}
 .opt.lock{opacity:.45;cursor:default;color:var(--dim)}
 .opt .sw{display:block;width:100%;height:11px;border-radius:5px;margin-bottom:4px}
 .opt .need{display:block;font-family:var(--pix);font-size:10px;color:var(--yellow);margin-top:2px}
 .opt canvas{display:block;width:100%;height:30px;margin-bottom:2px}
+#scareCv{position:fixed;top:0;left:0;width:100%;height:100%;z-index:58;display:none;
+  pointer-events:none}
+#scareCv.on{display:block}
 #mkGhost{position:fixed;z-index:70;pointer-events:none;display:none;
   margin-left:-26px;margin-top:-26px}
 #mkGhost.on{display:block}
@@ -249,6 +264,38 @@ body{overflow:hidden;touch-action:manipulation}
   #count{font-size:clamp(22px,7vw,36px)}
   #level{padding:5px 8px 6px}
   #lvln{font-size:11px;margin-top:3px}
+}
+@media (min-width:620px){
+  #pkGrid{grid-template-columns:repeat(5,1fr);max-width:760px}
+  .pk .becomes{font-size:9px}
+}
+/* a handheld held sideways, or any short screen: more across, less down */
+@media (max-height:600px){
+  #pkGrid{grid-template-columns:repeat(5,1fr);gap:7px;max-width:720px}
+  .pk{padding:5px 4px 5px}
+  .pk .nm{font-size:9px;margin-top:3px}
+  .pk .lk{font-size:8.5px;min-height:11px}
+  .pk .becomes{display:none}
+  #pkHead{margin-bottom:7px}
+  #pkClose{margin-top:9px;padding:8px 22px}
+}
+/* the face maker, sideways: head down the left, the parts down the right */
+@media (max-height:760px) and (orientation:landscape){
+  #mkHead{font-size:12px;margin:0 0 4px}
+  #mkStageBox{position:fixed;left:8px;top:30px;width:44%;height:auto;
+    bottom:62px;min-height:0;max-height:none}
+  /* the "what opens next" line goes above the parts on the right, where there
+     is room for it, instead of under the head where the buttons sat on it */
+  #mkNext{position:static;margin:0 0 5px 46%;text-align:left;font-size:10px}
+  #mkFoot{position:fixed;left:8px;bottom:8px;width:44%;margin:0}
+  #mkRows{margin-left:46%}
+  .mkRow{margin-bottom:6px}
+  .mkRow h4{font-size:10px;margin-bottom:3px}
+  .mkOpts{grid-template-columns:repeat(4,1fr);gap:5px}
+  .mkOpts.five{grid-template-columns:repeat(5,1fr);gap:4px}
+  .opt{font-size:9.5px;padding:5px 2px}
+  .opt canvas{height:22px}
+  .opt .sw{height:8px}
 }
 </style>
 </head>
@@ -353,6 +400,7 @@ body{overflow:hidden;touch-action:manipulation}
   <div id="pkGrid"></div>
   <button id="pkClose" type="button">DONE</button>
 </div>
+<canvas id="scareCv"></canvas>
 <canvas id="mkGhost" width="52" height="52"></canvas>
 <div id="toast"></div>
 
@@ -586,9 +634,9 @@ function nextLockedFace(){
 }
 
 var KEY='theface-v1';
-var S={total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,face:'smiley',trust:0,v:3};
+var S={total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,music:true,face:'smiley',trust:0,v:3};
 
-function fresh(){ return {total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,face:'smiley',trust:0,v:3}; }
+function fresh(){ return {total:0,best:0,grand:0,stage:0,prog:{},done:{},custom:null,sound:true,music:true,face:'smiley',trust:0,v:3}; }
 function load(){
   try{
     var r=JSON.parse(localStorage.getItem(KEY));
@@ -700,6 +748,247 @@ function growl(){
 }
 
 /* =======================================================================
+   THE FINAL BOSS — the music
+   Written here in code rather than loaded as a file: it is an original piece,
+   it adds nothing to the download, it loops for ever without a seam, and it
+   works with no internet. It is in D minor at 150, and it grows as the face
+   does — the drums and the lead only arrive once the thing has gone wrong.
+   ======================================================================= */
+var BPM=145, STEP=60/BPM/4;              /* one sixteenth */
+var BARS=8, STEPS=BARS*16;               /* eight bars, then it drops again */
+
+/* E minor, one chord a bar: Em - C - G - D, twice round */
+var ROOTS=[40,36,43,38, 40,36,43,38];
+/* the tune, written out as real notes rather than intervals, so it is a tune
+   and not the same shape slid up and down. -1 is a rest. */
+var LEAD=[
+ 71,-1,71,-1, 76,-1,74,-1, 71,-1,-1,69, 71,-1,-1,-1,
+ 72,-1,72,-1, 76,-1,74,-1, 72,-1,-1,71, 72,-1,-1,-1,
+ 74,-1,74,-1, 79,-1,78,-1, 74,-1,-1,71, 74,-1,-1,-1,
+ 69,-1,69,-1, 74,-1,73,-1, 69,-1,-1,66, 69,-1,-1,-1,
+ 76,-1,-1,74, 76,-1,79,-1, 78,-1,76,-1, 74,-1,71,-1,
+ 72,-1,-1,74, 76,-1,79,-1, 81,-1,79,-1, 76,-1,74,-1,
+ 74,-1,-1,76, 79,-1,83,-1, 81,-1,79,-1, 78,-1,74,-1,
+ 81,-1,79,-1, 78,-1,76,-1, 74,-1,73,-1, 74,-1,-1,-1];
+
+function isKick(i){ return (i%4)===0; }                 /* four on the floor */
+function isClap(i){ return (i%16)===4||(i%16)===12; }
+function isBass(i){ return (i%4)===2||(i%16)===0; }      /* off the beat, the dance way */
+function isOpenHat(i){ return (i%4)===2; }
+function isStab(i){ return (i%8)===2||(i%8)===6; }
+/* the last bar is the build: a snare roll that speeds up into the drop */
+function isRoll(i){
+  if(i<STEPS-8) return false;
+  var k=i-(STEPS-8);
+  return k===0||k===2||k===4||k===5||k===6||k===7;
+}
+
+var MUSIC={on:false,mode:'made',step:0,next:0,timer:null,bus:null,duck:null,noise:null,intensity:0};
+
+function mfreq(n){ return 440*Math.pow(2,(n-69)/12); }
+function musicBus(){
+  var c=actx(); if(!c) return null;
+  if(!MUSIC.bus){
+    MUSIC.bus=c.createGain();
+    MUSIC.bus.gain.value=0.0001;
+    MUSIC.bus.connect(c.destination);
+    /* everything except the kick goes through here, and the kick ducks it.
+       That pump on every beat is the sound he is asking for. */
+    MUSIC.duck=c.createGain();
+    MUSIC.duck.gain.value=1;
+    MUSIC.duck.connect(MUSIC.bus);
+  }
+  return MUSIC.bus;
+}
+function noiseBuf(){
+  var c=actx(); if(!c) return null;
+  if(!MUSIC.noise){
+    var n=Math.floor(c.sampleRate*0.9);
+    var b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0), i;
+    for(i=0;i<n;i++) d[i]=Math.random()*2-1;
+    MUSIC.noise=b;
+  }
+  return MUSIC.noise;
+}
+function mVoice(t,freq,dur,type,vol,filt,slideTo,dry){
+  var c=actx(); if(!musicBus()) return;
+  var dest=dry?MUSIC.bus:MUSIC.duck;
+  var o=c.createOscillator(), g=c.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+  if(filt){
+    var f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=filt;
+    g.connect(f); f.connect(dest);
+  }else{ g.connect(dest); }
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);
+  o.start(t); o.stop(t+dur+0.02);
+}
+/* three saws slightly out of tune with each other: the big bright lead */
+function mSuper(t,freq,dur,vol,filt,voices){
+  var i,n=voices||3, det=[0,-9,9,-16,16];
+  for(i=0;i<n;i++) mVoice(t,freq*Math.pow(2,det[i]/1200),dur,'sawtooth',vol/Math.sqrt(n),filt);
+}
+function mNoise(t,dur,vol,hp,dry,sweepTo){
+  var c=actx(), b=noiseBuf(); if(!musicBus()||!b) return;
+  var s=c.createBufferSource(), g=c.createGain(), f=c.createBiquadFilter();
+  s.buffer=b; f.type='highpass'; f.frequency.setValueAtTime(hp,t);
+  if(sweepTo) f.frequency.exponentialRampToValueAtTime(sweepTo,t+dur);
+  g.gain.setValueAtTime(vol,t);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(f); f.connect(g); g.connect(dry?MUSIC.bus:MUSIC.duck);
+  s.start(t); s.stop(t+dur+0.02);
+}
+function mKick(t,lvl){
+  var c=actx(); if(!musicBus()) return;
+  mVoice(t,150,0.19,'sine',0.42,0,42,true);
+  mNoise(t,0.02,0.09,2500,true);
+  /* the pump: pull everything else down, then let it swell back */
+  var d=MUSIC.duck.gain;
+  var deep=(lvl>=5)?0.26:0.38;
+  d.cancelScheduledValues(t);
+  d.setValueAtTime(deep,t);
+  d.linearRampToValueAtTime(1,t+Math.min(0.30,STEP*3.2));
+}
+/* if the gadget is struggling, thin the big saw chords out rather than let
+   the drawing stutter. The Anbernic is the one this is for. */
+var FPS={last:0,frames:0,at:0,slow:false};
+function fpsWatch(now){
+  FPS.frames++;
+  if(!FPS.at){ FPS.at=now; return; }
+  if(now-FPS.at>=1000){
+    var fps=FPS.frames*1000/(now-FPS.at);
+    FPS.slow=(fps<38);
+    FPS.frames=0; FPS.at=now;
+  }
+}
+function leadVoices(lvl){
+  if(FPS.slow) return lvl>=6?2:1;
+  return lvl>=6?5:3;
+}
+function musicStep(i,t){
+  var lvl=MUSIC.intensity;
+  var bar=Math.floor(i/16);
+  var root=ROOTS[bar%ROOTS.length];
+
+  if(isKick(i)) mKick(t,lvl);
+  if(isBass(i)){
+    mVoice(t,mfreq(root-12),STEP*1.6,'sawtooth',0.30,420);
+    mVoice(t,mfreq(root-24),STEP*1.6,'sine',0.22,260);
+  }
+  if(lvl>=1&&(i%2===1)) mNoise(t,0.026,0.040,8000);
+  if(lvl>=2&&isClap(i)){
+    mNoise(t,0.10,0.17,1600);
+    mNoise(t,0.02,0.10,900);
+  }
+  if(lvl>=3&&isOpenHat(i)) mNoise(t,0.085,0.055,6000);
+  if(lvl>=3&&isStab(i)){
+    var sv=FPS.slow?1:2;
+    mSuper(t,mfreq(root+12),0.10,0.055,2600,sv);
+    mSuper(t,mfreq(root+15),0.10,0.050,2600,sv);
+    mSuper(t,mfreq(root+19),0.10,0.046,2600,sv);
+  }
+  if(lvl>=4&&LEAD[i]>=0){
+    var dur=STEP*1.8;
+    if(lvl>=5) mSuper(t,mfreq(LEAD[i]),dur,0.115,3800,leadVoices(lvl));
+    else       mVoice(t,mfreq(LEAD[i]),dur,'sawtooth',0.085,2600);
+      if(lvl>=6&&!FPS.slow) mSuper(t,mfreq(LEAD[i]+12),dur*0.8,0.050,5200,2);
+  }
+  /* the build at the end of the eight bars, into the drop */
+  if(lvl>=6){
+    if(isRoll(i)) mNoise(t,0.07,0.13,1500);
+    if(i===STEPS-16) mNoise(t,STEP*15,0.055,300,false,6000);   /* the riser */
+    if(i===0) mNoise(t,0.7,0.10,900,true);                     /* the crash */
+  }
+}
+function musicTick(){
+  var c=actx(); if(!c) return;
+  if(c.state==='suspended'&&c.resume) c.resume();
+  var horizon=c.currentTime+0.30;
+  if(MUSIC.next<c.currentTime) MUSIC.next=c.currentTime+0.06;
+  while(MUSIC.next<horizon){
+    musicStep(MUSIC.step,MUSIC.next);
+    MUSIC.next+=STEP;
+    MUSIC.step=(MUSIC.step+1)%STEPS;
+  }
+}
+/* ---------- a real track, if one is sitting next to the game ----------
+   Put a file called boss.mp3 in the same folder as index.html and the game
+   plays that instead of the one it generates. Nothing to change in here. */
+var TRACK={el:null,state:'unknown'};
+function trackEl(){
+  if(!TRACK.el){
+    var a=document.createElement('audio');
+    a.loop=true; a.preload='auto'; a.volume=0;
+    a.addEventListener('canplaythrough',function(){ TRACK.state='yes'; },false);
+    a.addEventListener('error',function(){ TRACK.state='no'; },false);
+    a.src='boss.mp3';
+    TRACK.el=a;
+  }
+  return TRACK.el;
+}
+function trackPlay(){
+  var a=trackEl();
+  a.volume=0.62;
+  var p=a.play();
+  if(p&&p['catch']) p['catch'](function(){});
+  MUSIC.mode='file';
+}
+function trackStop(){
+  if(TRACK.el){ try{ TRACK.el.pause(); }catch(e){} }
+}
+
+function musicLevel(){
+  /* on the opening page it simmers; in the game it follows the face */
+  if($('#intro')&&$('#intro').className==='on') return 3;
+  return Math.max(0,Math.min(6,S.stage));
+}
+function musicStart(){
+  if(MUSIC.on||!S.music) return;
+  trackEl();                              /* start finding out about boss.mp3 */
+  if(TRACK.state==='yes'){ MUSIC.on=true; trackPlay(); return; }
+  var c=actx(), bus=musicBus(); if(!c||!bus) return;
+  MUSIC.mode='made';
+  MUSIC.on=true; MUSIC.step=0; MUSIC.next=c.currentTime+0.08;
+  MUSIC.intensity=musicLevel();
+  bus.gain.cancelScheduledValues(c.currentTime);
+  bus.gain.setValueAtTime(0.0001,c.currentTime);
+  bus.gain.exponentialRampToValueAtTime(0.55,c.currentTime+1.0);
+  MUSIC.duck.gain.cancelScheduledValues(c.currentTime);
+  MUSIC.duck.gain.setValueAtTime(1,c.currentTime);
+  MUSIC.timer=setInterval(function(){
+    /* if the file turns up a moment late, hand over to it */
+    if(TRACK.state==='yes'){ musicStop(); MUSIC.on=true; trackPlay(); return; }
+    MUSIC.intensity=musicLevel();
+    musicTick();
+  },70);
+}
+function musicStop(){
+  if(!MUSIC.on) return;
+  MUSIC.on=false;
+  trackStop();
+  if(MUSIC.timer){ clearInterval(MUSIC.timer); MUSIC.timer=null; }
+  var c=actx(), bus=MUSIC.bus;
+  if(c&&bus){
+    bus.gain.cancelScheduledValues(c.currentTime);
+    bus.gain.setValueAtTime(Math.max(0.0001,bus.gain.value),c.currentTime);
+    bus.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.35);
+  }
+}
+/* it stops when he puts the gadget down, so it is not draining the battery */
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden) musicStop();
+  else if(S.music&&musicWanted) musicStart();
+},false);
+var musicWanted=false;
+function wantMusic(on){
+  musicWanted=on;
+  if(on&&S.music) musicStart(); else musicStop();
+}
+
+/* =======================================================================
    DRAWING — one canvas, so it looks the same on every gadget
    ======================================================================= */
 var cv=$('#cv'), ctx=cv.getContext('2d');
@@ -715,8 +1004,142 @@ function sizeCanvas(){
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
 
-var LUNGE={t:0,dur:0.95};
-var squash=0;          /* click feedback */
+/* =======================================================================
+   THE ATTACK
+   What happens when he says he trusts it. Every character comes at him its
+   own way — a different approach, a different colour of lightning, different
+   rubbish left on the screen — so it is worth trusting all nine of them.
+   ======================================================================= */
+var SCARES={
+  smiley:  {mode:'lunge',  hits:3, flash:'#fff6c9', bolt:'#ffe066', bits:'spark',
+            from:[[0,0],[-1,-0.45],[0.7,0.35]], say:'straight at you'},
+  berry:   {mode:'rise',   hits:3, flash:'#cdefff', bolt:'#4fc3f7', bits:'drip',
+            from:[[0,1.2],[-0.5,1.2],[0.4,1.2]], say:'up from underneath'},
+  spider:  {mode:'skitter',hits:4, flash:'#e2d4ff', bolt:'#b98cff', bits:'leg',
+            from:[[-1.2,-0.8],[1.2,-0.5],[-1.1,0.7],[0,0]], say:'from the corners'},
+  alien:   {mode:'blink',  hits:4, flash:'#c9ffdc', bolt:'#7bff9e', bits:'spark',
+            from:[[0.9,-0.6],[-0.9,0.3],[0.5,0.7],[0,0]], say:'here, then nearer'},
+  ghost:   {mode:'fade',   hits:3, flash:'#f2f5ff', bolt:'#cfd6ff', bits:'wisp',
+            from:[[-0.55,-0.35],[0.55,-0.2],[0,0]], say:'through the screen'},
+  stranger:{mode:'walk',   hits:2, flash:'#ffe0e0', bolt:'#ff8a8a', bits:'none',
+            from:[[0,0.25],[0,0]], say:'walking, not running'},
+  robot:   {mode:'glitch', hits:4, flash:'#d6f7ff', bolt:'#7fe3ff', bits:'static',
+            from:[[0,0],[-0.6,0],[0.6,0],[0,0]], say:'the picture breaks'},
+  lava:    {mode:'charge', hits:3, flash:'#ffdcb0', bolt:'#ffb03d', bits:'ember',
+            from:[[-1.3,0.2],[1.3,0.1],[0,0]], say:'a run up'},
+  slime:   {mode:'splat',  hits:3, flash:'#e6ffc9', bolt:'#9bff5a', bits:'slime',
+            from:[[0.6,-0.9],[-0.6,-0.9],[0,-1]], say:'dropping on you'},
+  mine:    {mode:'lunge',  hits:3, flash:'#ffffff', bolt:'#ffd93d', bits:'spark',
+            from:[[0,0],[0.8,-0.4],[-0.6,0.5]], say:'however it likes'}
+};
+function scareStyle(){
+  var f=faceById(S.face);
+  return SCARES[f.id]||SCARES.smiley;
+}
+
+var SCARE={on:false,t:0,dur:0,style:null,beats:[],hit:0,
+           cracks:[],bits:[],flash:0,flashCol:'#fff',bolt:null,boltT:0,
+           dark:0,glitch:0,shake:0,alpha:1,scale:1,ox:0,oy:0,skip:false};
+var LUNGE={t:0,dur:0.95};          /* kept so the old name still means something */
+
+var scv=null, sctx=null, SW=0, SH=0;
+function scareCanvas(){
+  if(!scv){ scv=$('#scareCv'); sctx=scv.getContext('2d'); }
+  var w=window.innerWidth, h=window.innerHeight;
+  var dpr=Math.min(2,window.devicePixelRatio||1);
+  if(SW!==w||SH!==h||scv.width!==Math.floor(w*dpr)){
+    SW=w; SH=h;
+    scv.width=Math.floor(w*dpr); scv.height=Math.floor(h*dpr);
+    sctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  return sctx;
+}
+
+/* ---------- the noises ---------- */
+function thunder(){
+  if(!S.sound) return;
+  var c=actx(); if(!c) return;
+  try{
+    var b=noiseBuf(); if(!b) return;
+    var s=c.createBufferSource(), g=c.createGain(), f=c.createBiquadFilter();
+    s.buffer=b; s.loop=true;
+    f.type='lowpass'; f.frequency.setValueAtTime(700,c.currentTime);
+    f.frequency.exponentialRampToValueAtTime(90,c.currentTime+1.4);
+    g.gain.setValueAtTime(0.0001,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.30,c.currentTime+0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+1.5);
+    s.connect(f); f.connect(g); g.connect(c.destination);
+    s.start(); s.stop(c.currentTime+1.6);
+    var o=c.createOscillator(), og=c.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(70,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(28,c.currentTime+1.2);
+    og.gain.setValueAtTime(0.0001,c.currentTime);
+    og.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.06);
+    og.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+1.3);
+    o.connect(og); og.connect(c.destination);
+    o.start(); o.stop(c.currentTime+1.4);
+  }catch(e){}
+}
+function smash(kind){
+  if(!S.sound) return;
+  var c=actx(); if(!c) return;
+  try{
+    var b=noiseBuf(); if(!b) return;
+    var s=c.createBufferSource(), g=c.createGain(), f=c.createBiquadFilter();
+    s.buffer=b;
+    if(kind==='static'){ f.type='highpass'; f.frequency.value=1200; }
+    else if(kind==='slime'){ f.type='lowpass'; f.frequency.setValueAtTime(1800,c.currentTime);
+      f.frequency.exponentialRampToValueAtTime(200,c.currentTime+0.25); }
+    else if(kind==='ember'){ f.type='bandpass'; f.frequency.setValueAtTime(400,c.currentTime);
+      f.frequency.exponentialRampToValueAtTime(3000,c.currentTime+0.3); }
+    else { f.type='highpass'; f.frequency.value=600; }
+    g.gain.setValueAtTime(0.32,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.34);
+    s.connect(f); f.connect(g); g.connect(c.destination);
+    s.start(); s.stop(c.currentTime+0.36);
+    var o=c.createOscillator(), og=c.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(150,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(40,c.currentTime+0.25);
+    og.gain.setValueAtTime(0.35,c.currentTime);
+    og.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.3);
+    o.connect(og); og.connect(c.destination);
+    o.start(); o.stop(c.currentTime+0.32);
+  }catch(e){}
+}
+
+/* ---------- the broken glass ---------- */
+function makeCrack(x,y,len){
+  var pts=[[x,y]], a=Math.random()*6.283, n=4+Math.floor(Math.random()*4), i, px=x, py=y;
+  for(i=0;i<n;i++){
+    a+=(Math.random()-0.5)*1.0;
+    var l=(len/n)*(0.55+Math.random()*0.9);
+    px+=Math.cos(a)*l; py+=Math.sin(a)*l;
+    pts.push([px,py]);
+  }
+  return pts;
+}
+function crackBurst(x,y,n,len){
+  var i,j;
+  for(i=0;i<n;i++){
+    var main=makeCrack(x,y,len);
+    SCARE.cracks.push(main);
+    if(Math.random()<0.7){
+      j=1+Math.floor(Math.random()*(main.length-2));
+      SCARE.cracks.push(makeCrack(main[j][0],main[j][1],len*0.45));
+    }
+  }
+  if(SCARE.cracks.length>90) SCARE.cracks.splice(0,SCARE.cracks.length-90);
+}
+function addScareBits(x,y,kind,n){
+  var i;
+  for(i=0;i<n;i++){
+    var a=Math.random()*6.283, sp=1+Math.random()*5;
+    SCARE.bits.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.5,
+                     life:1,k:kind,r:2+Math.random()*4});
+  }
+}
+
+var squash=0;var squash=0;          /* click feedback */
 var wobble=0;
 var pointer={x:-1,y:-1,has:false};
 var bits=[];           /* the little bursts */
@@ -989,17 +1412,240 @@ function paintFace(c,cx,cy,R,face,st,t,track){
   }
 }
 
+/* ---------- the timeline ----------
+   hush, lightning, hit, back off, lightning, hit ... then the big one */
+function startScare(){
+  var st=scareStyle();
+  SCARE.on=true; SCARE.t=0; SCARE.style=st; SCARE.hit=0;
+  SCARE.cracks=[]; SCARE.bits=[]; SCARE.flash=0; SCARE.dark=0;
+  SCARE.glitch=0; SCARE.shake=0; SCARE.alpha=1; SCARE.scale=1;
+  SCARE.ox=0; SCARE.oy=0; SCARE.skip=false; SCARE.beats=[]; SCARE.fired={};
+  var t=0.75, i;                                  /* the quiet bit first */
+  for(i=0;i<st.hits;i++){
+    var last=(i===st.hits-1);
+    SCARE.beats.push({t:t,      what:'bolt'});
+    SCARE.beats.push({t:t+0.22, what:'come', i:i});
+    SCARE.beats.push({t:t+(last?0.95:0.62), what:'hit', i:i, big:last});
+    t += last ? 1.5 : 1.05;
+  }
+  SCARE.dur=t+0.35;
+  $('#scareCv').className='on';
+  scareCanvas();
+  thunder();
+  if(MUSIC.on&&MUSIC.bus){                        /* the music gets out of the way */
+    var c=actx();
+    MUSIC.bus.gain.cancelScheduledValues(c.currentTime);
+    MUSIC.bus.gain.setValueAtTime(Math.max(0.0001,MUSIC.bus.gain.value),c.currentTime);
+    MUSIC.bus.gain.exponentialRampToValueAtTime(0.06,c.currentTime+0.4);
+  }
+}
+function endScare(){
+  SCARE.on=false;
+  $('#scareCv').className='';
+  if(MUSIC.on&&MUSIC.bus){
+    var c=actx();
+    MUSIC.bus.gain.cancelScheduledValues(c.currentTime);
+    MUSIC.bus.gain.setValueAtTime(Math.max(0.0001,MUSIC.bus.gain.value),c.currentTime);
+    MUSIC.bus.gain.exponentialRampToValueAtTime(0.55,c.currentTime+0.8);
+  }
+  lungeDone();
+}
+function skipScare(){
+  if(!SCARE.on) return false;
+  SCARE.skip=true; SCARE.t=SCARE.dur; endScare(); return true;
+}
+function scareTick(dt){
+  if(!SCARE.on) return;
+  var st=SCARE.style, i, b;
+  SCARE.t+=dt;
+  for(i=0;i<SCARE.beats.length;i++){
+    b=SCARE.beats[i];
+    if(SCARE.t>=b.t && !SCARE.fired[i]){
+      SCARE.fired[i]=true;
+      if(b.what==='bolt'){
+        SCARE.flash=1; SCARE.flashCol=st.flash;
+        SCARE.bolt=makeBolt(); SCARE.boltT=0.22;
+        if(SCARE.t>0.8) thunder();
+      }else if(b.what==='come'){
+        SCARE.hit=b.i;
+      }else if(b.what==='hit'){
+        var w=SW||window.innerWidth, h=SH||window.innerHeight;
+        var hx=w*(0.32+Math.random()*0.36), hy=h*(0.30+Math.random()*0.34);
+        crackBurst(hx,hy,b.big?9:4,Math.min(w,h)*(b.big?0.42:0.26));
+        addScareBits(hx,hy,st.bits,b.big?26:14);
+        SCARE.shake=b.big?1:0.7;
+        SCARE.flash=b.big?0.9:0.55; SCARE.flashCol=st.flash;
+        if(st.mode==='glitch') SCARE.glitch=b.big?1:0.6;
+        smash(st.bits);
+        growl();
+      }
+    }
+  }
+  SCARE.flash=Math.max(0,SCARE.flash-dt*3.2);
+  SCARE.boltT=Math.max(0,SCARE.boltT-dt);
+  SCARE.shake=Math.max(0,SCARE.shake-dt*3.4);
+  SCARE.glitch=Math.max(0,SCARE.glitch-dt*2.2);
+  SCARE.dark=Math.min(1,SCARE.dark+dt*1.5);
+
+  /* where the face is, and how big, for this moment */
+  var prog=0, from=[0,0], idx=Math.min(SCARE.hit,st.from.length-1);
+  for(i=0;i<SCARE.beats.length;i++){
+    b=SCARE.beats[i];
+    if(b.what==='come'&&SCARE.t>=b.t){
+      var nextHit=null, j;
+      for(j=i;j<SCARE.beats.length;j++) if(SCARE.beats[j].what==='hit'){ nextHit=SCARE.beats[j]; break; }
+      if(nextHit&&SCARE.t<=nextHit.t+0.35){
+        prog=Math.max(0,Math.min(1,(SCARE.t-b.t)/(nextHit.t-b.t)));
+        idx=b.i; from=st.from[Math.min(b.i,st.from.length-1)];
+      }
+    }
+  }
+  var big=(idx===st.hits-1);
+  var curve=prog*prog;
+  if(st.mode==='walk')   curve=prog*0.9;
+  if(st.mode==='charge') curve=Math.pow(prog,3);
+  if(st.mode==='blink')  curve=Math.floor(prog*4)/4;
+  if(st.mode==='rise')   curve=Math.pow(prog,1.6);
+  SCARE.scale=1+(big?9:4.2)*curve;
+  SCARE.ox=from[0]*(1-curve)*(SW*0.55);
+  SCARE.oy=from[1]*(1-curve)*(SH*0.55);
+  SCARE.alpha = (st.mode==='fade') ? (0.25+0.75*curve)
+              : (st.mode==='blink'&&prog>0&&prog<1&&(Math.floor(prog*8)%2===1)) ? 0.15 : 1;
+
+  for(i=SCARE.bits.length-1;i>=0;i--){
+    var p=SCARE.bits[i];
+    p.x+=p.vx; p.y+=p.vy; p.vy+=(p.k==='wisp'?-0.06:0.22);
+    p.life-=dt*(p.k==='wisp'?0.7:1.1);
+    if(p.life<=0) SCARE.bits.splice(i,1);
+  }
+  if(SCARE.t>=SCARE.dur) endScare();
+}
+function makeBolt(){
+  var w=SW||window.innerWidth, h=SH||window.innerHeight;
+  var x=w*(0.2+Math.random()*0.6), y=-10, pts=[[x,y]], i;
+  for(i=0;i<9;i++){
+    x+=(Math.random()-0.5)*w*0.18;
+    y+=h/9*(0.7+Math.random()*0.6);
+    pts.push([x,y]);
+  }
+  return pts;
+}
+function drawScare(t){
+  if(!SCARE.on) return;
+  var c=scareCanvas(), st=SCARE.style, i, j;
+  var w=SW, h=SH;
+  c.clearRect(0,0,w,h);
+
+  /* the dark */
+  c.fillStyle='rgba(2,1,6,'+(0.55+0.4*SCARE.dark).toFixed(3)+')';
+  c.fillRect(0,0,w,h);
+
+  /* the shake */
+  var sh=SCARE.shake;
+  c.save();
+  if(sh>0) c.translate((Math.random()-0.5)*26*sh,(Math.random()-0.5)*26*sh);
+
+  /* the face, coming at him */
+  var face=faceById(S.face);
+  var R=Math.min(w,h)*0.22*SCARE.scale*(face.size||1);
+  c.globalAlpha=SCARE.alpha;
+  paintFace(c,w/2+SCARE.ox,h/2+SCARE.oy,R,face,LAST_STAGE,t,{x:0,y:0.1});
+  c.globalAlpha=1;
+  c.restore();
+
+  /* dark round the edges, over the top of it, so the screen still feels dim
+     even when the face is filling the whole thing */
+  var vg=c.createRadialGradient(w/2,h/2,Math.min(w,h)*0.18,w/2,h/2,Math.max(w,h)*0.75);
+  vg.addColorStop(0,'rgba(0,0,0,0)');
+  vg.addColorStop(1,'rgba(0,0,0,'+(0.55+0.35*SCARE.dark).toFixed(3)+')');
+  c.fillStyle=vg; c.fillRect(0,0,w,h);
+
+  /* the picture tearing, for the one that breaks */
+  if(SCARE.glitch>0.02){
+    var dpr=Math.min(2,window.devicePixelRatio||1), bands=5;
+    for(i=0;i<bands;i++){
+      var by=Math.random()*h, bh=6+Math.random()*26;
+      var dx=(Math.random()-0.5)*70*SCARE.glitch;
+      c.drawImage(scv, 0,Math.floor(by*dpr), Math.floor(w*dpr),Math.floor(bh*dpr),
+                       dx,by, w,bh);
+    }
+    c.fillStyle='rgba(127,227,255,'+(0.10*SCARE.glitch).toFixed(3)+')';
+    c.fillRect(0,0,w,h);
+  }
+
+  /* the lightning */
+  if(SCARE.boltT>0&&SCARE.bolt){
+    c.strokeStyle=st.bolt; c.lineCap='round'; c.lineJoin='round';
+    c.globalAlpha=Math.min(1,SCARE.boltT/0.22);
+    c.lineWidth=7; c.globalAlpha*=0.35;
+    c.beginPath(); c.moveTo(SCARE.bolt[0][0],SCARE.bolt[0][1]);
+    for(i=1;i<SCARE.bolt.length;i++) c.lineTo(SCARE.bolt[i][0],SCARE.bolt[i][1]);
+    c.stroke();
+    c.globalAlpha=Math.min(1,SCARE.boltT/0.22); c.lineWidth=2.5; c.strokeStyle='#fff';
+    c.stroke();
+    c.globalAlpha=1;
+  }
+
+  /* the broken glass */
+  if(SCARE.cracks.length){
+    for(j=0;j<2;j++){
+      c.strokeStyle=(j===0)?'rgba(0,0,0,.62)':'rgba(255,255,255,.92)';
+      c.lineWidth=(j===0)?6:2.4;
+      c.lineCap='round'; c.lineJoin='round';
+      for(i=0;i<SCARE.cracks.length;i++){
+        var p=SCARE.cracks[i];
+        c.beginPath(); c.moveTo(p[0][0],p[0][1]);
+        var k; for(k=1;k<p.length;k++) c.lineTo(p[k][0],p[k][1]);
+        c.stroke();
+      }
+    }
+  }
+
+  /* whatever it threw off */
+  for(i=0;i<SCARE.bits.length;i++){
+    var b2=SCARE.bits[i];
+    c.globalAlpha=Math.max(0,Math.min(1,b2.life));
+    if(b2.k==='ember')      c.fillStyle='#ff7a2b';
+    else if(b2.k==='slime') c.fillStyle='#9bff5a';
+    else if(b2.k==='drip')  c.fillStyle='#4fc3f7';
+    else if(b2.k==='wisp')  c.fillStyle='#cfd6ff';
+    else if(b2.k==='static')c.fillStyle=(i%2)?'#7fe3ff':'#ffffff';
+    else if(b2.k==='leg')   c.fillStyle='#8a6ad0';
+    else                    c.fillStyle='#ffd93d';
+    if(b2.k==='none'){ }
+    else if(b2.k==='static'){ c.fillRect(b2.x,b2.y,b2.r*3,b2.r*0.8); }
+    else { c.beginPath(); c.arc(b2.x,b2.y,b2.r,0,6.283); c.fill(); }
+  }
+  c.globalAlpha=1;
+
+  /* the flash */
+  if(SCARE.flash>0.01){
+    c.fillStyle=st.flash;
+    c.globalAlpha=Math.min(0.92,SCARE.flash);
+    c.fillRect(0,0,w,h);
+    c.globalAlpha=1;
+  }
+
+  /* it goes black for a moment before it starts laughing */
+  var left=SCARE.dur-SCARE.t;
+  if(left<0.3){
+    c.fillStyle='rgba(0,0,0,'+Math.min(1,(0.3-left)/0.3).toFixed(3)+')';
+    c.fillRect(0,0,w,h);
+  }
+
+  /* a way out for anyone who has seen it enough */
+  if(SCARE.t>1.2){
+    c.fillStyle='rgba(255,255,255,.45)';
+    c.font='bold 11px "Courier New",monospace'; c.textAlign='center';
+    c.fillText('TAP TO SKIP', w/2, h-16);
+  }
+}
+
 function drawFace(t){
   var st=S.stage, face=faceById(S.face);
   var base=Math.min(W,H);
   var grow=[0.30,0.33,0.36,0.39,0.42,0.45,0.49][st];
   var R=base*grow*(1-squash*0.10)*(face.size||1);
-  if(LUNGE.t>0){
-    var lp=1-(LUNGE.t/LUNGE.dur);             /* 0 -> 1 */
-    R=R*(1+7.5*lp*lp);
-    ctx.fillStyle='rgba(0,0,0,'+(0.25+0.55*lp)+')';
-    ctx.fillRect(0,0,W,H);
-  }
   var cx=W/2, cy=H/2+Math.sin(t*0.0011)*(base*0.012);
   var sx=1+squash*0.14, sy=1-squash*0.14;
 
@@ -1029,14 +1675,12 @@ var last=0;
 function frame(ts){
   if(!last) last=ts;
   var dt=Math.min(0.1,(ts-last)/1000); last=ts;
+  fpsWatch(ts);
 
   /* idle earnings */
   /* nothing ticks up on its own any more: the number only moves when he taps */
 
-  if(LUNGE.t>0){
-    LUNGE.t-=dt;
-    if(LUNGE.t<=0){ LUNGE.t=0; lungeDone(); }
-  }
+  scareTick(dt);
   squash=Math.max(0,squash-dt*5.5);
   wobble=Math.max(0,wobble-dt*3.0);
 
@@ -1070,6 +1714,7 @@ function frame(ts){
   ctx.globalAlpha=1;
 
   paintNumbers();
+  drawScare(ts);
   window.requestAnimationFrame(frame);
 }
 
@@ -1246,9 +1891,21 @@ setInterval(function(){
   padWas=on;
 },60);
 
+/* one button, three steps: everything, noises only, silence */
+function soundLabel(){
+  if(S.sound&&S.music) return '&#128266; MUSIC + NOISES';
+  if(S.sound)          return '&#128265; NOISES ONLY';
+  return '&#128263; ALL QUIET';
+}
+function applySound(){
+  $('#bSound').innerHTML=soundLabel();
+  if(S.music&&musicWanted) musicStart(); else musicStop();
+}
 $('#bSound').addEventListener('click',function(){
-  S.sound=!S.sound; save();
-  $('#bSound').innerHTML=S.sound?'&#128266; SOUND ON':'&#128263; SOUND OFF';
+  if(S.sound&&S.music){ S.music=false; }
+  else if(S.sound){ S.sound=false; S.music=false; }
+  else { S.sound=true; S.music=true; }
+  save(); applySound();
   if(S.sound) blip(900,0.08,'square',0.05);
 });
 $('#bReset').addEventListener('click',function(){
@@ -1309,8 +1966,8 @@ function lungeDone(){
 function answerTrust(yes){
   trustAnswer=yes;
   $('#trust').className='';
-  if(yes){ LUNGE.t=LUNGE.dur; growl(); blip(90,0.5,'sawtooth',0.10); }
-  else{ LUNGE.t=0; lungeDone(); blip(520,0.16,'sine',0.05); }
+  if(yes){ startScare(); blip(90,0.5,'sawtooth',0.10); }
+  else{ lungeDone(); blip(520,0.16,'sine',0.05); }
 }
 $('#tsYes').addEventListener('click',function(){ answerTrust(true); });
 $('#tsNo').addEventListener('click',function(){ answerTrust(false); });
@@ -1710,7 +2367,7 @@ function buildMaker(keepScroll){
         var P=mkPal(o.p[0],o.p[1],o.p[2],o.p[3]);
         sw='<span class="sw" style="background:linear-gradient(90deg,'+P.col[0]+','+P.col[3]+','+P.col[6]+')"></span>';
       }
-      h+='<button class="opt'+(sel&&open?' sel':'')+(open?'':' lock')+'" type="button" '+
+      h+='<button class="opt'+(drg?' drag':'')+(sel&&open?' sel':'')+(open?'':' lock')+'" type="button" '+
          'data-k="'+key+'" data-o="'+o.id+'">'+sw+art+(open?o.n:'? ? ?')+
          (open?'':'<span class="need">AT '+fmt(TIERS[o.t])+'</span>')+'</button>';
     }
@@ -1799,6 +2456,9 @@ $('#bFace').addEventListener('click',function(){
 });
 $('#pkClose').addEventListener('click',function(){ $('#picker').className=''; });
 
+document.addEventListener('pointerdown',function(){ skipScare(); },true);
+document.addEventListener('touchstart',function(){ if(!window.PointerEvent) skipScare(); },true);
+window.addEventListener('resize',function(){ if(SCARE.on) scareCanvas(); },false);
 window.addEventListener('resize',sizeCanvas);
 window.addEventListener('orientationchange',function(){ setTimeout(sizeCanvas,200); });
 
@@ -1872,6 +2532,7 @@ function gateTap(which){
     gateS++; el=$('#whoS'); blip(520+gateS*30,0.06,'square',0.05);
   }
   /* restart the little pop on the button and on the picture */
+  wantMusic(true);              /* his first press is the gesture the browser wants */
   el.className=el.className.replace(' hit','');
   var pic=$('#iPicWrap'); pic.className='';
   if(el.offsetWidth>=0) el.className=el.className+' hit';
@@ -1895,6 +2556,7 @@ function bindGate(id,which){
 var started=false;
 function startGame(){
   if(started) return; started=true;
+  wantMusic(true);
   $('#intro').className='';
   $('#blobs').innerHTML='';        /* stop the animations once we are past it */
   sizeCanvas();
@@ -1907,13 +2569,14 @@ $('#iGo').addEventListener('click',function(e){
   if(e&&e.preventDefault)e.preventDefault();
   if(gateOpen) startGame();
 });
+trackEl();          /* find out about boss.mp3 now, not when he presses START */
 makeBlobs();
 bindGate('#whoD','d');
 bindGate('#whoS','s');
 paintGate();
 
 sizeCanvas();
-if(!S.sound) $('#bSound').innerHTML='&#128263; SOUND OFF';
+applySound();
 S.stage=stageFor(S.total);
 if(S.stage>=LAST_STAGE&&!faceDone(S.face)) S.done[S.face]=true;
 if(S.stage>=FACES_LAST) $('#askagain').className='on';
@@ -1921,8 +2584,12 @@ if(S.stage>=FACES_LAST) $('#askagain').className='on';
 /* let the tests reach in */
 window.__paint=paintFace;
 window.__eyesets=EYESETS;
-window.__game={S:S,FACES:FACES,askTrust:askTrust,answerTrust:answerTrust,LUNGE:LUNGE,faceById:faceById,faceUnlocked:faceUnlocked,buildPicker:buildPicker,perTap:perTap,stageFor:stageFor,
+window.__game={S:S,FACES:FACES,askTrust:askTrust,answerTrust:answerTrust,LUNGE:LUNGE,
+  SCARE:SCARE,SCARES:SCARES,scareStyle:scareStyle,startScare:startScare,skipScare:skipScare,scareTick:scareTick,faceById:faceById,faceUnlocked:faceUnlocked,buildPicker:buildPicker,perTap:perTap,stageFor:stageFor,
   STAGES:STAGES,LEVELS:LEVELS,levelFor:levelFor,tapsToNextLevel:tapsToNextLevel,tapsToNextStage:tapsToNextStage,
+  MUSIC:MUSIC,TRACK:TRACK,FPS:FPS,leadVoices:leadVoices,musicStart:musicStart,musicStop:musicStop,musicLevel:musicLevel,wantMusic:wantMusic,
+  LEAD:LEAD,ROOTS:ROOTS,STEPS:STEPS,BPM:BPM,BARS:BARS,
+  isKick:isKick,isClap:isClap,isBass:isBass,isStab:isStab,isRoll:isRoll,
   PARTS:PARTS,TIERS:TIERS,tierOpen:tierOpen,myFace:myFace,allFaces:allFaces,mkPal:mkPal,
   openMaker:openMaker,buildMaker:buildMaker,customCfg:customCfg,drawMaker:drawMaker,
   freshCustom:freshCustom,mkGeom:mkGeom,MK:MK,MAX_EYES:MAX_EYES,hitPart:hitPart,nearHandle:nearHandle,
